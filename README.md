@@ -38,9 +38,10 @@ This is a Golang-based microservice designed to report the energy consumption of
 ## Configuration
 Configuration options can be set via environment variables:
 - `PORT`: The port on which the service runs (default: 8181)
-- `DB_HOST`: Database host
+- `DB_HOST`: Database host (and port)
 - `DB_USER`: Database user
 - `DB_PASSWORD`: Database password
+- `DB_NAME`: Database name
 
 ## Testing
 Run the tests using:
