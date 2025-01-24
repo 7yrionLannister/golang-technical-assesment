@@ -15,6 +15,7 @@ type Environment struct {
 	DataBasePassword string `env:"DB_PASSWORD,required"`
 	DataBaseName     string `env:"DB_NAME,required"`
 	DataBaseUrl      string
+	LogLevel         string `env:"LOG_LEVEL" envDefault:"info"`
 }
 
 // global variable that holds the environment variables that the application needs.
@@ -31,7 +32,7 @@ func LoadEnv() error {
 	if err != nil {
 		return fmt.Errorf("error parsing environment variables: %w", err)
 	}
-	baseURL := fmt.Sprintf("%s://%s:%s@%s/%s", Env.DataBaseEngine, Env.DataBaseUser, Env.DataBasePassword, Env.DataBaseHost, Env.DataBaseName)
+	baseURL := fmt.Sprintf("%s://%s:%s@%s/%s?sslmode=disable", Env.DataBaseEngine, Env.DataBaseUser, Env.DataBasePassword, Env.DataBaseHost, Env.DataBaseName)
 	Env.DataBaseUrl = baseURL
 	return nil
 }
