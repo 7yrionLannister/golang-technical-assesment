@@ -1,27 +1,23 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/7yrionLannister/golang-technical-assesment/config"
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
 	"github.com/7yrionLannister/golang-technical-assesment/db"
-	"github.com/jackc/pgx/v5"
 )
 
 func main() {
 	config.Setup()
-	err := db.ImportTestData()
+	err := db.InitDatabaseConnection()
 	if err != nil {
-		logger.Debug("Error importing test data", slog.Any("error", err))
+		logger.Error("Error initializing database connection", slog.Any("error", err))
+		os.Exit(1)
 	}
-	fmt.Println("Connecting to database: ", config.Env.DataBaseUrl)
-	connection, err := pgx.Connect(context.Background(), config.Env.DataBaseUrl)
+	err = db.ImportTestData()
 	if err != nil {
-		fmt.Println("Error connecting to database: ", err)
-		return
+		logger.Error("Error importing test data", slog.Any("error", err))
 	}
-	fmt.Println("Connected to database, ping: ", connection.Ping(context.Background()))
 }

@@ -33,20 +33,14 @@ var gormConfig = &gorm.Config{
 	Logger: gormLogger.Default.LogMode(gormLogger.Silent),
 }
 
-// Run the golang-migrate migrations defined in the db/migrations folder
-// Read data from test.csv and import it into the database
-func ImportTestData() error {
-	// read data from file
-	file, err := os.Open(dataFile)
-	if err != nil {
-		msg := "Failed to open data file"
-		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", err))
-		return e
-	}
-	defer file.Close()
+// global gorm database connection.
+// Call [InitDatabaseConnection] once at the beggining of the application to initialize the connection.
+var GormDb *gorm.DB
+
+func InitDatabaseConnection() error {
 	// connect gorm to database
-	gormDb, err := gorm.Open(postgres.New(postgres.Config{
+	logger.Debug("Connecting to database at " + config.Env.DataBaseUrl)
+	db, err := gorm.Open(postgres.New(postgres.Config{
 		DriverName: "pgx",
 		DSN:        config.Env.DataBaseUrl,
 	}), gormConfig)
@@ -56,6 +50,23 @@ func ImportTestData() error {
 		logger.Error(msg, slog.Any("error", err))
 		return e
 	}
+	GormDb = db
+	logger.Debug("Connected to database")
+	return nil
+}
+
+// Read data from test.csv and import it into the database
+func ImportTestData() error {
+	// read data from file
+	logger.Debug("Importing data from file")
+	file, err := os.Open(dataFile)
+	if err != nil {
+		msg := "Failed to open data file"
+		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
+		logger.Error(msg, slog.Any("error", err))
+		return e
+	}
+	defer file.Close()
 	// read all records from csv file
 	csvReader := csv.NewReader(file)
 	records, err := csvReader.ReadAll()
@@ -79,7 +90,7 @@ func ImportTestData() error {
 		})
 	}
 	// batch insert for efficiency
-	gormDb.CreateInBatches(energyConsumptions, len(energyConsumptions))
+	GormDb.CreateInBatches(energyConsumptions, len(energyConsumptions))
 	logger.Debug("Imported data from file")
 	return nil
 }
