@@ -14,7 +14,9 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-func MigrateUp(url string) error {
+// Run the golang-migrate migrations defined in the db/migrations folder
+func MigrateUp() error {
+	logger.Debug("Applying migrations...")
 	sqlDB, err := sql.Open("pgx", Env.DataBaseUrl)
 	if err != nil {
 		logger.Error("Failed to open database", slog.Any("error", err))
@@ -24,21 +26,21 @@ func MigrateUp(url string) error {
 
 	// Run migrations with golang-migrate
 	m, err := migrate.New(
-		"file://./db/migrations",
+		"file://./config/db.migrations",
 		Env.DataBaseUrl,
 	)
 	if err != nil {
 		msg := "Failed to create migrate instance"
 		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", e))
+		logger.Error(msg, slog.Any("error", err))
 		return e
 	}
 
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		msg := "failed to apply migrations"
+		msg := "Failed to apply migrations"
 		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", e))
+		logger.Error(msg, slog.Any("error", err))
 		return e
 	}
 

@@ -19,9 +19,10 @@ func Setup() {
 	logger.InitLogger(Env.LogLevel)
 
 	// Migrate the database
-	err = MigrateUp(Env.DataBaseUrl)
+	err = MigrateUp()
 	if err != nil {
 		logger.Error("Error migrating database", slog.Any("error", err))
 		os.Exit(1)
 	}
+	logger.Debug("Initialized application")
 }
