@@ -18,11 +18,11 @@ type Environment struct {
 	LogLevel         string `env:"LOG_LEVEL" envDefault:"info"`
 }
 
-// global variable that holds the environment variables that the application needs.
+// Global variable that holds the environment variables that the application needs.
 // Use only after calling [LoadEnv].
 var Env Environment = Environment{}
 
-// loads the environment variables into [Env].
+// Loads the environment variables into [Env].
 func LoadEnv() error {
 	err := godotenv.Load(".env")
 	if err != nil {

@@ -33,12 +33,12 @@ var gormConfig = &gorm.Config{
 	Logger: gormLogger.Default.LogMode(gormLogger.Silent),
 }
 
-// global gorm database connection.
+// Global gorm database connection.
 // Call [InitDatabaseConnection] once at the beggining of the application to initialize the connection.
 var GormDb *gorm.DB
 
 func InitDatabaseConnection() error {
-	// connect gorm to database
+	// Connect gorm to database
 	logger.Debug("Connecting to database at " + config.Env.DataBaseUrl)
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DriverName: "pgx",
@@ -57,7 +57,7 @@ func InitDatabaseConnection() error {
 
 // Read data from test.csv and import it into the database
 func ImportTestData() error {
-	// read data from file
+	// Read data from file
 	logger.Debug("Importing data from file")
 	file, err := os.Open(dataFile)
 	if err != nil {
@@ -67,7 +67,7 @@ func ImportTestData() error {
 		return e
 	}
 	defer file.Close()
-	// read all records from csv file
+	// Read all records from csv file
 	csvReader := csv.NewReader(file)
 	records, err := csvReader.ReadAll()
 	if err != nil {
@@ -76,7 +76,7 @@ func ImportTestData() error {
 		logger.Error(msg, slog.Any("error", err))
 		return e
 	}
-	// store records as model.EnergyConsumption slice
+	// Store records as model.EnergyConsumption slice
 	energyConsumptions := make([]model.EnergyConsumption, 0)
 	for _, record := range records {
 		deviceId, _ := strconv.Atoi(record[1])
@@ -89,8 +89,20 @@ func ImportTestData() error {
 			CreatedAt:   createdAt,
 		})
 	}
-	// batch insert for efficiency
+	// Batch insert for efficiency
 	GormDb.CreateInBatches(energyConsumptions, len(energyConsumptions))
 	logger.Debug("Imported data from file")
 	return nil
+}
+
+func GetEnergyConsumptionsByMeterIdBetweenDates(meterId uint, startDate time.Time, endDate time.Time) ([]model.EnergyConsumption, error) {
+	energyConsumptions := make([]model.EnergyConsumption, 0)
+	err := GormDb.Where("device_id = (?) AND created_at BETWEEN ? AND ?", meterId, startDate, endDate).Find(&energyConsumptions).Error
+	if err != nil {
+		msg := "Failed to query energy consumptions"
+		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
+		logger.Error(msg, slog.Any("error", err))
+		return nil, e
+	}
+	return energyConsumptions, nil
 }

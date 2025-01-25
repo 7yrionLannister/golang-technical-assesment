@@ -10,7 +10,7 @@ var logConfig = &slog.HandlerOptions{
 	AddSource: false,
 }
 
-// global logger
+// Global logger
 var slogger *slog.Logger
 
 func InitLogger(levelStr string) {
