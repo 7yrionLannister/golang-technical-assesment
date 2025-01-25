@@ -2,16 +2,14 @@ package db
 
 import (
 	"encoding/csv"
-	"fmt"
-	"log/slog"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/7yrionLannister/golang-technical-assesment/config"
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
 	"github.com/7yrionLannister/golang-technical-assesment/db/model"
+	"github.com/7yrionLannister/golang-technical-assesment/util"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/google/uuid"
@@ -46,9 +44,7 @@ func InitDatabaseConnection() error {
 	}), gormConfig)
 	if err != nil {
 		msg := "Failed to connect to database"
-		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", err))
-		return e
+		return util.HandleError(err, msg)
 	}
 	GormDb = db
 	logger.Debug("Connected to database")
@@ -62,9 +58,7 @@ func ImportTestData() error {
 	file, err := os.Open(dataFile)
 	if err != nil {
 		msg := "Failed to open data file"
-		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", err))
-		return e
+		return util.HandleError(err, msg)
 	}
 	defer file.Close()
 	// Read all records from csv file
@@ -72,9 +66,7 @@ func ImportTestData() error {
 	records, err := csvReader.ReadAll()
 	if err != nil {
 		msg := "Failed to read data from file"
-		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", err))
-		return e
+		return util.HandleError(err, msg)
 	}
 	// Store records as model.EnergyConsumption slice
 	energyConsumptions := make([]model.EnergyConsumption, 0)
@@ -100,9 +92,7 @@ func GetEnergyConsumptionsByMeterIdBetweenDates(meterId uint, startDate time.Tim
 	err := GormDb.Where("device_id = (?) AND created_at BETWEEN ? AND ?", meterId, startDate, endDate).Find(&energyConsumptions).Error
 	if err != nil {
 		msg := "Failed to query energy consumptions"
-		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", err))
-		return nil, e
+		return nil, util.HandleError(err, msg)
 	}
 	return energyConsumptions, nil
 }

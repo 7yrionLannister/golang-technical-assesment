@@ -1,14 +1,11 @@
 package service
 
 import (
-	"fmt"
-	"log/slog"
-	"strings"
 	"time"
 
-	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
 	"github.com/7yrionLannister/golang-technical-assesment/controller/dto"
 	"github.com/7yrionLannister/golang-technical-assesment/db"
+	"github.com/7yrionLannister/golang-technical-assesment/util"
 	"github.com/go-faker/faker/v4"
 )
 
@@ -18,46 +15,75 @@ const (
 	monthly = "monthly"
 )
 
+// Returns the energy consumption for each meter in the metersIds slice for the period between startDate and endDate.
 func GetEnergyConsumptions(metersIds []uint, startDate time.Time, endDate time.Time, kindPeriod string) (*dto.PeriodicConsumptionDTO, error) {
-	// monthly
 	var periodDto = &dto.PeriodicConsumptionDTO{
 		Period:    make([]string, 0),
 		DataGraph: make([]*dto.EnergyConsumptionDTO, 0),
 	}
+	stepThroughPeriod(periodDto, metersIds, startDate, endDate, kindPeriod)
+
+	return periodDto, nil
+}
+
+// Iterates through the period between startDate and endDate, incrementing the date by the kindPeriod to find the sub-periods.
+// For each sub-period, it computes the energy consumption for each meter in the metersIds slice.
+func stepThroughPeriod(periodDto *dto.PeriodicConsumptionDTO, metersIds []uint, startDate time.Time, endDate time.Time, kindPeriod string) error {
+	// map to keep track of the *dto.EnergyConsumptionDTO that is part of the DataGraph
 	energyConsumptionDTOForMeter := make(map[uint]*dto.EnergyConsumptionDTO)
 	for startDate.Before(endDate) {
-		periodString := startDate.Format("January 2006") // TODO format as "JAN 2006"
+		periodEndDate, periodString := stepDateAndGetPeriodString(kindPeriod, startDate)
 		periodDto.Period = append(periodDto.Period, periodString)
-		periodEndDate := startDate.AddDate(0, 1, 0)
 		if periodEndDate.After(endDate) {
 			periodEndDate = endDate
 		}
-		for _, meterId := range metersIds {
-			energyConsumptions, err := db.GetEnergyConsumptionsByMeterIdBetweenDates(meterId, startDate, periodEndDate)
-			if err != nil {
-				msg := "Failed to fetch energy consumptions"
-				e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-				logger.Error(msg, slog.Any("error", err))
-				return nil, e
-			}
-			consumption := 0.0
-			for _, energyConsumption := range energyConsumptions {
-				consumption += energyConsumption.Consumption
-			}
-			energyConsumptionDTO, present := energyConsumptionDTOForMeter[meterId]
-			if !present {
-				energyConsumptionDTO = &dto.EnergyConsumptionDTO{
-					MeterId: meterId,
-					Active:  make([]float64, 0),
-					Address: faker.GetRealAddress().Address, // TODO replace with address microservice
-				}
-				energyConsumptionDTOForMeter[meterId] = energyConsumptionDTO
-				periodDto.DataGraph = append(periodDto.DataGraph, energyConsumptionDTO)
-			}
-			energyConsumptionDTO.Active = append(energyConsumptionDTO.Active, consumption)
+		err := populateDataGraphForPeriod(periodDto, metersIds, energyConsumptionDTOForMeter, startDate, periodEndDate)
+		if err != nil {
+			return err
 		}
 		startDate = periodEndDate
 	}
+	return nil
+}
 
-	return periodDto, nil
+// Increments the date by the kindPeriod.
+// Gets the period string for the kindPeriod.
+func stepDateAndGetPeriodString(kindPeriod string, initialDate time.Time) (newDate time.Time, periodString string) {
+	switch kindPeriod {
+	case daily:
+		return initialDate.AddDate(0, 0, 1), "TODO"
+	case weekly:
+		return initialDate.AddDate(0, 0, 7), "TODO"
+	case monthly:
+		return initialDate.AddDate(0, 1, 0), initialDate.Format("January 2006") // TODO format as "JAN 2006"
+	default:
+		return initialDate, "TODO"
+	}
+}
+
+// Computes the energy consumption for each meter in the metersIds slice for the period between periodStartDate and periodEndDate
+func populateDataGraphForPeriod(periodDto *dto.PeriodicConsumptionDTO, metersIds []uint, energyConsumptionDTOForMeter map[uint]*dto.EnergyConsumptionDTO, periodStartDate time.Time, periodEndDate time.Time) error {
+	for _, meterId := range metersIds {
+		energyConsumptions, err := db.GetEnergyConsumptionsByMeterIdBetweenDates(meterId, periodStartDate, periodEndDate)
+		if err != nil {
+			msg := "Failed to fetch energy consumptions"
+			return util.HandleError(err, msg)
+		}
+		consumption := 0.0
+		for _, energyConsumption := range energyConsumptions {
+			consumption += energyConsumption.Consumption
+		}
+		energyConsumptionDTO, present := energyConsumptionDTOForMeter[meterId]
+		if !present {
+			energyConsumptionDTO = &dto.EnergyConsumptionDTO{
+				MeterId: meterId,
+				Active:  make([]float64, 0),
+				Address: faker.GetRealAddress().Address, // TODO replace with address microservice
+			}
+			energyConsumptionDTOForMeter[meterId] = energyConsumptionDTO
+			periodDto.DataGraph = append(periodDto.DataGraph, energyConsumptionDTO)
+		}
+		energyConsumptionDTO.Active = append(energyConsumptionDTO.Active, consumption)
+	}
+	return nil
 }

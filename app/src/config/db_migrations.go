@@ -2,12 +2,11 @@ package config
 
 import (
 	"database/sql"
-	"fmt"
 	"log/slog"
 	"os"
-	"strings"
 
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
+	"github.com/7yrionLannister/golang-technical-assesment/util"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -31,17 +30,13 @@ func MigrateUp() error {
 	)
 	if err != nil {
 		msg := "Failed to create migrate instance"
-		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", err))
-		return e
+		return util.HandleError(err, msg)
 	}
 
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
 		msg := "Failed to apply migrations"
-		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", err))
-		return e
+		return util.HandleError(err, msg)
 	}
 
 	logger.Debug("Migrations applied successfully!")

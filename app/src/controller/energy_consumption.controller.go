@@ -26,11 +26,12 @@ func GetConsumption(c *gin.Context) {
 		return
 	}
 	logger.Debug("Query params", slog.Any("params", params))
-	// Query data
+	// Query data from the service
 	periodDto, err := service.GetEnergyConsumptions(params.MeterIds, params.StartDate, params.EndDate, params.KindPeriod)
 	if err != nil {
 		logger.Error("Error querying consumption data", slog.Any("error", err))
 		c.JSON(500, gin.H{"error": "Internal server error"})
+		return
 	}
 	c.JSON(200, periodDto)
 }
