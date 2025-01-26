@@ -1,20 +1,11 @@
 package db
 
 import (
-	"encoding/csv"
-	"fmt"
-	"log/slog"
-	"os"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/7yrionLannister/golang-technical-assesment/config"
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
-	"github.com/7yrionLannister/golang-technical-assesment/db/model"
+	"github.com/7yrionLannister/golang-technical-assesment/util"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -33,64 +24,41 @@ var gormConfig = &gorm.Config{
 	Logger: gormLogger.Default.LogMode(gormLogger.Silent),
 }
 
-// global gorm database connection.
-// Call [InitDatabaseConnection] once at the beggining of the application to initialize the connection.
-var GormDb *gorm.DB
+// Database abstraction
+type Database interface {
+	InitDatabaseConnection() error                  // Setup global database connection
+	Find(out any, query string, args ...any) error  // Find records that match the query
+	CreateInBatches(value any, batchSize int) error // Create records in batches
+}
 
-func InitDatabaseConnection() error {
-	// connect gorm to database
+// Specific implementation of the Database interface using gorm
+type GormDatabase struct {
+	DB *gorm.DB
+}
+
+func (g *GormDatabase) Find(out any, query string, args ...any) error {
+	return g.DB.Where(query, args...).Find(out).Error
+}
+
+func (g *GormDatabase) CreateInBatches(value any, batchSize int) error {
+	return g.DB.CreateInBatches(value, batchSize).Error
+}
+
+// Global gorm database connection.
+// Call [InitDatabaseConnection] once at the beggining of the application to initialize the connection.
+var DB Database
+
+func (g *GormDatabase) InitDatabaseConnection() error {
+	// Connect gorm to database
 	logger.Debug("Connecting to database at " + config.Env.DataBaseUrl)
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DriverName: "pgx",
 		DSN:        config.Env.DataBaseUrl,
 	}), gormConfig)
 	if err != nil {
-		msg := "Failed to connect to database"
-		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", err))
-		return e
+		return util.HandleError(err, "Failed to connect to database")
 	}
-	GormDb = db
+	g.DB = db
 	logger.Debug("Connected to database")
-	return nil
-}
-
-// Read data from test.csv and import it into the database
-func ImportTestData() error {
-	// read data from file
-	logger.Debug("Importing data from file")
-	file, err := os.Open(dataFile)
-	if err != nil {
-		msg := "Failed to open data file"
-		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", err))
-		return e
-	}
-	defer file.Close()
-	// read all records from csv file
-	csvReader := csv.NewReader(file)
-	records, err := csvReader.ReadAll()
-	if err != nil {
-		msg := "Failed to read data from file"
-		e := fmt.Errorf("%s: %w", strings.ToLower(msg), err)
-		logger.Error(msg, slog.Any("error", err))
-		return e
-	}
-	// store records as model.EnergyConsumption slice
-	energyConsumptions := make([]model.EnergyConsumption, 0)
-	for _, record := range records {
-		deviceId, _ := strconv.Atoi(record[1])
-		consumption, _ := strconv.ParseFloat(record[2], 64)
-		createdAt, _ := time.Parse("2006-01-02 15:04:05+00", record[3])
-		energyConsumptions = append(energyConsumptions, model.EnergyConsumption{
-			Id:          uuid.MustParse(record[0]),
-			DeviceId:    uint(deviceId),
-			Consumption: consumption,
-			CreatedAt:   createdAt,
-		})
-	}
-	// batch insert for efficiency
-	GormDb.CreateInBatches(energyConsumptions, len(energyConsumptions))
-	logger.Debug("Imported data from file")
 	return nil
 }
