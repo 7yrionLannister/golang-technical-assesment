@@ -10,6 +10,7 @@ import (
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
 	"github.com/7yrionLannister/golang-technical-assesment/db"
 	"github.com/7yrionLannister/golang-technical-assesment/db/model"
+	"github.com/7yrionLannister/golang-technical-assesment/test"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -20,46 +21,14 @@ var (
 	uuid2 = uuid.MustParse("204757bc-fb23-49c4-9adc-41957ba19cb6")
 )
 
-// [mockDatabase] is a mock implementation of the [Database] interface
-type mockDatabase struct {
-	mock.Mock
-}
-
-// naive mock [db.Database.InitDatabaseConnection] implementation.
-// It does not perform any database connection, but simply returns nil error.
-func (m *mockDatabase) InitDatabaseConnection() error {
-	return nil
-}
-
-// naive mock [db.Database.Find] implementation that solely retrieves the expected output slice
-// or returns the expected error.
-func (m *mockDatabase) Find(out any, query string, args ...any) error {
-	argsCall := m.Called(out, query, args)
-	if argsCall.Get(1) == nil {
-		switch result := out.(type) {
-		case *[]model.EnergyConsumption:
-			*result = argsCall.Get(0).([]model.EnergyConsumption)
-		default:
-			panic("unsupported type for Find output")
-		}
-	}
-	return argsCall.Error(1)
-}
-
-// naive mock [db.Database.CreateInBatches] implementation that solely returns the expected error
-func (m *mockDatabase) CreateInBatches(value any, batchSize int) error {
-	argsCall := m.Called(value, batchSize)
-	return argsCall.Error(0)
-}
-
-var mockDB *mockDatabase
+var mockDB *test.MockDatabase
 
 // Initialize the mock database and the logger.
 func TestMain(m *testing.M) {
 	logger.InitLogger(config.Env.LogLevel)
-	db.DB = new(mockDatabase)
+	db.DB = new(test.MockDatabase)
 	db.DB.InitDatabaseConnection()
-	mockDB = db.DB.(*mockDatabase)
+	mockDB = db.DB.(*test.MockDatabase)
 
 	code := m.Run()
 	os.Exit(code)
@@ -73,8 +42,8 @@ func TestGetEnergyConsumptionsByMeterIdBetweenDates_Success(t *testing.T) {
 
 	// Expect
 	expectedData := []model.EnergyConsumption{
-		{Id: uuid1, DeviceId: 123, Consumption: 1.0, CreatedAt: time.Now()},
-		{Id: uuid2, DeviceId: 123, Consumption: 2.0, CreatedAt: time.Now()},
+		{Id: uuid1, DeviceId: 123, Consumption: 1.0, CreatedAt: endDate},
+		{Id: uuid2, DeviceId: 123, Consumption: 2.0, CreatedAt: endDate},
 	}
 
 	// When
