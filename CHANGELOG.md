@@ -9,11 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- v1.3 report daily energy consumption
-
 ### Changed
 
 ### Removed
+
+## [1.3.0] - 2025-01-26
+
+### Added
+
+- v1.3 report daily energy consumption
 
 ## [1.2.0] - 2025-01-26
 
