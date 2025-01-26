@@ -1,0 +1,88 @@
+basePath: /
+definitions:
+  dto.EnergyConsumptionDTO:
+    properties:
+      active:
+        items:
+          type: number
+        type: array
+      address:
+        description: TODO consume external API
+        type: string
+      meter_id:
+        type: integer
+    type: object
+  dto.PeriodicConsumptionDTO:
+    properties:
+      data_graph:
+        items:
+          $ref: '#/definitions/dto.EnergyConsumptionDTO'
+        type: array
+      period:
+        items:
+          type: string
+        type: array
+    type: object
+host: localhost:8181
+info:
+  contact:
+    email: daniel.fernandez3@u.icesi.edu.co
+    name: Daniel Fernández
+  description: Report the energy consumption of a set of electricity meters.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Energy Consumption API
+  version: "1.0"
+paths:
+  /consumption:
+    get:
+      description: Returns the energy consumption for each meter for the period between
+        startDate and endDate.
+      parameters:
+      - collectionFormat: csv
+        description: Meter ids
+        in: query
+        items:
+          type: integer
+        name: meters_ids
+        required: true
+        type: array
+      - description: 'Start date (format: YYYY-MM-DD)'
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: 'End date (format: YYYY-MM-DD)'
+        in: query
+        name: end_date
+        required: true
+        type: string
+      - description: Kind period (any of [monthly, weekly, daily])
+        in: query
+        name: kind_period
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Consumption report
+          schema:
+            $ref: '#/definitions/dto.PeriodicConsumptionDTO'
+        "400":
+          description: Invalid query params
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get consumption report
+      tags:
+      - consumption
+swagger: "2.0"
