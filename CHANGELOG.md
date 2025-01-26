@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- v1.2 report weekly energy consumption
+
 ### Changed
 
 ### Removed
