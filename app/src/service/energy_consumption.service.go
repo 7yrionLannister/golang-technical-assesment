@@ -55,7 +55,8 @@ func stepDateAndGetPeriodString(kindPeriod string, initialDate time.Time) (newDa
 	case daily:
 		return initialDate.AddDate(0, 0, 1), "TODO"
 	case weekly:
-		return initialDate.AddDate(0, 0, 7), "TODO"
+		periodString = initialDate.Format("January 2") + " - " + initialDate.AddDate(0, 0, 6).Format("January 2") // TODO format as "JAN 01"
+		return initialDate.AddDate(0, 0, 7), periodString
 	case monthly:
 		return initialDate.AddDate(0, 1, 0), initialDate.Format("January 2006") // TODO format as "JAN 2006"
 	default:

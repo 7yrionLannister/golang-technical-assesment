@@ -13,7 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-## [1.0.0] - 2025-01-26
+## [1.2.0] - 2025-01-26
+
+### Added
+
+- v1.2 report weekly energy consumption
+
+## [1.1.0] - 2025-01-26
 
 ### Added
 
