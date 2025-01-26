@@ -6,14 +6,17 @@ import (
 
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
 	"github.com/7yrionLannister/golang-technical-assesment/service"
+	"github.com/7yrionLannister/golang-technical-assesment/util"
 	"github.com/gin-gonic/gin"
 )
 
+// struct used to parse the query parameters.
 type consumptionQueryParams struct {
-	MeterIds   []uint    `form:"meters_ids" binding:"required"`
-	StartDate  time.Time `form:"start_date" binding:"required" time_format:"2006-01-02"`
-	EndDate    time.Time `form:"end_date" binding:"required" time_format:"2006-01-02"`
-	KindPeriod string    `form:"kind_period" binding:"required"`
+	MeterIdsString string `form:"meters_ids" binding:"required"` // Do not use this field, use [MeterIds] instead
+	MeterIds       []uint
+	StartDate      time.Time `form:"start_date" binding:"required" time_format:"2006-01-02"`
+	EndDate        time.Time `form:"end_date" binding:"required" time_format:"2006-01-02"`
+	KindPeriod     string    `form:"kind_period" binding:"required"`
 }
 
 // GetConsumption godoc
@@ -35,9 +38,16 @@ func GetConsumption(c *gin.Context) {
 	err := c.BindQuery(&params)
 	if err != nil {
 		logger.Error("Error binding query params", slog.Any("error", err))
-		c.JSON(400, gin.H{"error": "Invalid query params"})
+		c.JSON(400, gin.H{"error": "Invalid query params", "cause": err})
 		return
 	}
+	metersIds, err := util.String2UintSlice(params.MeterIdsString)
+	if err != nil {
+		logger.Error("Error converting meter ids to slice", slog.Any("error", err))
+		c.JSON(400, gin.H{"error": "Failed to convert meter ids to slice", "cause": err})
+		return
+	}
+	params.MeterIds = metersIds
 	logger.Debug("Query params", slog.Any("params", params))
 	// Query data from the service
 	periodDto, err := service.GetEnergyConsumptions(params.MeterIds, params.StartDate, params.EndDate, params.KindPeriod)
