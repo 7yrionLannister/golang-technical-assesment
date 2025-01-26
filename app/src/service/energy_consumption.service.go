@@ -53,9 +53,9 @@ func stepThroughPeriod(periodDto *dto.PeriodicConsumptionDTO, metersIds []uint, 
 func stepDateAndGetPeriodString(kindPeriod string, initialDate time.Time) (newDate time.Time, periodString string) {
 	switch kindPeriod {
 	case daily:
-		return initialDate.AddDate(0, 0, 1), "TODO"
+		return initialDate.AddDate(0, 0, 1), initialDate.Format("January 2") // TODO format as "JAN 2"
 	case weekly:
-		periodString = initialDate.Format("January 2") + " - " + initialDate.AddDate(0, 0, 6).Format("January 2") // TODO format as "JAN 01"
+		periodString = initialDate.Format("January 2") + " - " + initialDate.AddDate(0, 0, 6).Format("January 2") // TODO format as "JAN 2 - JAN 2"
 		return initialDate.AddDate(0, 0, 7), periodString
 	case monthly:
 		return initialDate.AddDate(0, 1, 0), initialDate.Format("January 2006") // TODO format as "JAN 2006"
