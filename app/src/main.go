@@ -21,7 +21,9 @@ func main() {
 }
 
 func dbInit() {
-	err := db.InitDatabaseConnection()
+	// Connect to the database
+	db.DB = new(db.GormDatabase)
+	err := db.DB.InitDatabaseConnection()
 	if err != nil {
 		logger.Error("Error initializing database connection", slog.Any("error", err))
 		os.Exit(1)

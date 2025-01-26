@@ -26,28 +26,29 @@ var gormConfig = &gorm.Config{
 
 // Database abstraction
 type Database interface {
+	InitDatabaseConnection() error                  // Setup global database connection
 	Find(out any, query string, args ...any) error  // Find records that match the query
 	CreateInBatches(value any, batchSize int) error // Create records in batches
 }
 
 // Specific implementation of the Database interface using gorm
-type gormDatabase struct {
+type GormDatabase struct {
 	DB *gorm.DB
 }
 
-func (g *gormDatabase) Find(out any, query string, args ...any) error {
+func (g *GormDatabase) Find(out any, query string, args ...any) error {
 	return g.DB.Where(query, args...).Find(out).Error
 }
 
-func (g *gormDatabase) CreateInBatches(value any, batchSize int) error {
+func (g *GormDatabase) CreateInBatches(value any, batchSize int) error {
 	return g.DB.CreateInBatches(value, batchSize).Error
 }
 
 // Global gorm database connection.
 // Call [InitDatabaseConnection] once at the beggining of the application to initialize the connection.
-var DB *gormDatabase
+var DB Database
 
-func InitDatabaseConnection() error {
+func (g *GormDatabase) InitDatabaseConnection() error {
 	// Connect gorm to database
 	logger.Debug("Connecting to database at " + config.Env.DataBaseUrl)
 	db, err := gorm.Open(postgres.New(postgres.Config{
@@ -57,7 +58,7 @@ func InitDatabaseConnection() error {
 	if err != nil {
 		return util.HandleError(err, "Failed to connect to database")
 	}
-	DB = &gormDatabase{db}
+	g.DB = db
 	logger.Debug("Connected to database")
 	return nil
 }
