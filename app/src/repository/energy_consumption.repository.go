@@ -9,7 +9,7 @@ import (
 )
 
 func GetEnergyConsumptionsByMeterIdBetweenDates(meterId uint, startDate time.Time, endDate time.Time) ([]model.EnergyConsumption, error) {
-	energyConsumptions := make([]model.EnergyConsumption, 0)
+	var energyConsumptions []model.EnergyConsumption
 	err := db.DB.Find(&energyConsumptions, "device_id = (?) AND created_at BETWEEN ? AND ?", meterId, startDate, endDate)
 	if err != nil {
 		return nil, util.HandleError(err, "Failed to query energy consumptions")
