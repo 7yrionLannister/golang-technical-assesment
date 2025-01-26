@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"os"
 	"reflect"
 	"testing"
@@ -91,5 +92,30 @@ func TestGetEnergyConsumptionsMonthly_Success(t *testing.T) {
 		return true
 	}, "result.DataGraph is not equal to expectedResult")
 	assert.Equal(t, []string{"January 2025", "February 2025"}, result.Period)
+	mockDB.AssertExpectations(t)
+}
+
+func TestGetEnergyConsumptionsMonthly_Error(t *testing.T) {
+	// For
+	// Input
+	metersIds := []uint{0, 1}
+	startDate, _ := time.Parse("2006-01-02", "2024-01-01")
+	endDate, _ := time.Parse("2006-01-02", "2024-02-27")
+
+	// Expect
+	expectedErr := errors.New("database error")
+
+	// When
+	mockDB.On("Find", mock.Anything, mock.Anything, mock.Anything).
+		// Then
+		Return(nil, expectedErr)
+
+	// Test
+	result, err := GetEnergyConsumptions(metersIds, startDate, endDate, "monthly")
+
+	// Assert
+	assert.Nil(t, result)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "database error")
 	mockDB.AssertExpectations(t)
 }

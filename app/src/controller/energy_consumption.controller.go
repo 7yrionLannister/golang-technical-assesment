@@ -16,6 +16,19 @@ type consumptionQueryParams struct {
 	KindPeriod string    `form:"kind_period" binding:"required"`
 }
 
+// GetConsumption godoc
+// @Summary      Get consumption report
+// @Description  Returns the energy consumption for each meter for the period between startDate and endDate.
+// @Tags         consumption
+// @Produce      json
+// @Param        meters_ids  query  []uint  true  "Meter ids"
+// @Param        start_date  query  string  true  "Start date (format: YYYY-MM-DD)"
+// @Param        end_date    query  string  true  "End date (format: YYYY-MM-DD)"
+// @Param        kind_period query  string  true  "Kind period (any of [monthly, weekly, daily])"
+// @Success      200  {object}  dto.PeriodicConsumptionDTO  "Consumption report"
+// @Failure      400  {object}  map[string]string  "Invalid query params"
+// @Failure      500  {object}  map[string]string  "Internal server error"
+// @Router       /consumption [get]
 func GetConsumption(c *gin.Context) {
 	logger.Debug("Querying consumption data")
 	var params consumptionQueryParams

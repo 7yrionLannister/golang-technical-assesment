@@ -21,8 +21,10 @@ func GetEnergyConsumptions(metersIds []uint, startDate time.Time, endDate time.T
 		Period:    make([]string, 0),
 		DataGraph: make([]*dto.EnergyConsumptionDTO, 0),
 	}
-	stepThroughPeriod(periodDto, metersIds, startDate, endDate, kindPeriod)
-
+	err := stepThroughPeriod(periodDto, metersIds, startDate, endDate, kindPeriod)
+	if err != nil {
+		return nil, err
+	}
 	return periodDto, nil
 }
 
