@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- v1.1 report monthly energy consumption
+- gin-gonic/gin framework
+- swaggo openapi documentation
 - gorm model
 - import test data from csv file
 - .env file configuration
