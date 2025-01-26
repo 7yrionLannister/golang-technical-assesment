@@ -19,19 +19,19 @@ func InitLogger(levelStr string) {
 	slogger = slog.New(slog.NewJSONHandler(os.Stdout, logConfig))
 }
 
-func Debug(msg string, args ...interface{}) {
+func Debug(msg string, args ...any) {
 	slogger.Debug(msg, args...)
 }
 
-func Info(msg string, args ...interface{}) {
+func Info(msg string, args ...any) {
 	slogger.Info(msg, args...)
 }
 
-func Warn(msg string, args ...interface{}) {
+func Warn(msg string, args ...any) {
 	slogger.Warn(msg, args...)
 }
 
-func Error(msg string, args ...interface{}) {
+func Error(msg string, args ...any) {
 	slogger.Error(msg, args...)
 }
 

@@ -29,14 +29,12 @@ func MigrateUp() error {
 		Env.DataBaseUrl,
 	)
 	if err != nil {
-		msg := "Failed to create migrate instance"
-		return util.HandleError(err, msg)
+		return util.HandleError(err, "Failed to create migrate instance")
 	}
 
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
-		msg := "Failed to apply migrations"
-		return util.HandleError(err, msg)
+		return util.HandleError(err, "Failed to apply migrations")
 	}
 
 	logger.Debug("Migrations applied successfully!")

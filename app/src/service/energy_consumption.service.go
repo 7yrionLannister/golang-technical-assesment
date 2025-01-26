@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/7yrionLannister/golang-technical-assesment/controller/dto"
-	"github.com/7yrionLannister/golang-technical-assesment/db"
+	"github.com/7yrionLannister/golang-technical-assesment/repository"
 	"github.com/7yrionLannister/golang-technical-assesment/util"
 	"github.com/go-faker/faker/v4"
 )
@@ -64,10 +64,9 @@ func stepDateAndGetPeriodString(kindPeriod string, initialDate time.Time) (newDa
 // Computes the energy consumption for each meter in the metersIds slice for the period between periodStartDate and periodEndDate
 func populateDataGraphForPeriod(periodDto *dto.PeriodicConsumptionDTO, metersIds []uint, energyConsumptionDTOForMeter map[uint]*dto.EnergyConsumptionDTO, periodStartDate time.Time, periodEndDate time.Time) error {
 	for _, meterId := range metersIds {
-		energyConsumptions, err := db.GetEnergyConsumptionsByMeterIdBetweenDates(meterId, periodStartDate, periodEndDate)
+		energyConsumptions, err := repository.GetEnergyConsumptionsByMeterIdBetweenDates(meterId, periodStartDate, periodEndDate)
 		if err != nil {
-			msg := "Failed to fetch energy consumptions"
-			return util.HandleError(err, msg)
+			return util.HandleError(err, "Failed to fetch energy consumptions")
 		}
 		consumption := 0.0
 		for _, energyConsumption := range energyConsumptions {
