@@ -36,6 +36,7 @@ This is a Golang-based microservice designed to report the energy consumption of
     go run main.go
     ```
 3. Access the service at `http://localhost:8181` (or the configured port).
+4. Access the swagger documentation at `http://localhost:8181/swagger/index.html`.
 
 ## Configuration
 Configuration options can be set via environment variables:
@@ -59,7 +60,7 @@ To build and run the service using Docker:
     ```
 2. Run the Docker container:
     ```sh
-    docker run -p 8181:8181 energy-consumption-reporter
+    docker run -p 8181:8181 --network app_consumption energy-consumption-reporter
     ```
 
 ## Contributing

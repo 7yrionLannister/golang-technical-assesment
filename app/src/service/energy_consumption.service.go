@@ -80,7 +80,7 @@ func populateDataGraphForPeriod(periodDto *dto.PeriodicConsumptionDTO, metersIds
 			energyConsumptionDTO = &dto.EnergyConsumptionDTO{
 				MeterId: meterId,
 				Active:  make([]float64, 0),
-				Address: faker.GetRealAddress().Address, // TODO replace with address microservice
+				Address: faker.GetRealAddress().Address, // Asume faker to be an http client that gets the address for the meter
 			}
 			energyConsumptionDTOForMeter[meterId] = energyConsumptionDTO
 			periodDto.DataGraph = append(periodDto.DataGraph, energyConsumptionDTO)

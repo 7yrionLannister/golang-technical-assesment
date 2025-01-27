@@ -56,5 +56,6 @@ func GetConsumption(c *gin.Context) {
 		c.JSON(500, gin.H{"error": "Internal server error"})
 		return
 	}
+	logger.Info("Consumption data retrieved successfully", slog.Any("response", periodDto))
 	c.JSON(200, periodDto)
 }
