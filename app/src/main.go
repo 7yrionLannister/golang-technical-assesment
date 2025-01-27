@@ -43,6 +43,6 @@ func dbInit() {
 	}
 	err = db.ImportTestData()
 	if err != nil {
-		logger.Error("Error importing test data", slog.Any("error", err))
+		logger.Warn("Error importing test data", slog.Any("error", err))
 	}
 }

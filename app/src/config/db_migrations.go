@@ -13,7 +13,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-// Run the golang-migrate migrations defined in the db/migrations folder
+// Run the golang-migrate migrations defined in the db.migrations folder
 func MigrateUp() error {
 	logger.Debug("Applying migrations...")
 	sqlDB, err := sql.Open("pgx", Env.DataBaseUrl)
