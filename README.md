@@ -4,7 +4,9 @@
 This is a Golang-based microservice designed to report the energy consumption of a set of electricity meters.
 
 ## Features
-- TODO
+- v1.1 Report monthly energy consumption
+- v1.2 Report weekly energy consumption
+- v1.3 Report daily energy consumption
 
 ## Prerequisites
 - Go 1.23.x
