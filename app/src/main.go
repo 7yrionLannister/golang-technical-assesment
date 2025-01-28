@@ -25,12 +25,17 @@ import (
 // @host      localhost:8181
 // @BasePath  /
 func main() {
+	app := setup()
+	app.Run()
+}
+
+func setup() *gin.Engine {
 	config.Setup()
 	dbInit()
 	app := gin.Default()
 	middleware.Setup(app)
 	router.Setup(app)
-	app.Run()
+	return app
 }
 
 func dbInit() {

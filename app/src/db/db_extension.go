@@ -12,6 +12,11 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	dataFile  = "../data/test.csv"
+	batchSize = 1000
+)
+
 // Read data from test.csv and import it into the database
 func ImportTestData() error {
 	// Read data from file
@@ -41,7 +46,11 @@ func ImportTestData() error {
 		})
 	}
 	// Batch insert for efficiency
-	DB.CreateInBatches(energyConsumptions, len(energyConsumptions))
+
+	err = DB.CreateInBatches(energyConsumptions, batchSize)
+	if err != nil {
+		return util.HandleError(err, "Failed to create in batches")
+	}
 	logger.Debug("Imported data from file")
 	return nil
 }
