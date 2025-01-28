@@ -49,7 +49,7 @@ Configuration options can be set via environment variables:
 ## Testing
 Run the tests using:
 ```sh
-go test -v .\repository\ .\service\
+go test -v ./...
 ```
 
 ## Docker
