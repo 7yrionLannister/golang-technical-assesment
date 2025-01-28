@@ -13,10 +13,6 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-const (
-	dataFile = "../data/test.csv"
-)
-
 var gormConfig = &gorm.Config{
 	NamingStrategy: schema.NamingStrategy{
 		SingularTable: true,

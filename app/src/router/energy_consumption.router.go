@@ -7,5 +7,5 @@ import (
 
 func ConsumptionRouter(app *gin.Engine) {
 	consumptionRouter := app.Group("/consumption")
-	consumptionRouter.GET("/", controller.GetConsumption)
+	consumptionRouter.GET("", controller.GetConsumption)
 }
