@@ -12,6 +12,6 @@ import (
 // The message is converted to lowercase, it is best practice for error strings.
 func HandleError(err error, message string) error {
 	e := fmt.Errorf("%s: %w", strings.ToLower(message), err)
-	logger.Error(message, slog.Any("error", err))
+	logger.L.Error(message, slog.Any("error", err))
 	return e
 }

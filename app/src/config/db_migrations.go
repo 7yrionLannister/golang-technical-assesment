@@ -15,10 +15,10 @@ import (
 
 // Run the golang-migrate migrations defined in the db.migrations folder
 func MigrateUp() error {
-	logger.Debug("Applying migrations...")
+	logger.L.Debug("Applying migrations...")
 	sqlDB, err := sql.Open("pgx", Env.DataBaseUrl)
 	if err != nil {
-		logger.Error("Failed to open database", slog.Any("error", err))
+		logger.L.Error("Failed to open database", slog.Any("error", err))
 		os.Exit(1)
 	}
 	defer sqlDB.Close()
@@ -37,6 +37,6 @@ func MigrateUp() error {
 		return util.HandleError(err, "Failed to apply migrations")
 	}
 
-	logger.Debug("Migrations applied successfully!")
+	logger.L.Debug("Migrations applied successfully!")
 	return nil
 }

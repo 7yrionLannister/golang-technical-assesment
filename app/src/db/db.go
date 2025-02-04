@@ -46,7 +46,7 @@ var DB Database
 
 func (g *GormDatabase) InitDatabaseConnection() error {
 	// Connect gorm to database
-	logger.Debug("Connecting to database at " + config.Env.DataBaseUrl)
+	logger.L.Debug("Connecting to database at " + config.Env.DataBaseUrl)
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DriverName: "pgx",
 		DSN:        config.Env.DataBaseUrl,
@@ -55,6 +55,6 @@ func (g *GormDatabase) InitDatabaseConnection() error {
 		return util.HandleError(err, "Failed to connect to database")
 	}
 	g.DB = db
-	logger.Debug("Connected to database")
+	logger.L.Debug("Connected to database")
 	return nil
 }

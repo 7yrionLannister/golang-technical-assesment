@@ -1,53 +1,11 @@
 package logger
 
-import (
-	"log/slog"
-	"os"
-	"strings"
-)
-
-var logConfig = &slog.HandlerOptions{
-	AddSource: false,
+type Logger interface {
+	InitLogger(levelStr string)    // Initialize the logger with the given level
+	Debug(msg string, args ...any) // Log a debug message
+	Info(msg string, args ...any)  // Log an info message
+	Warn(msg string, args ...any)  // Log a warning message
+	Error(msg string, args ...any) // Log an error message
 }
 
-// Global logger
-var slogger *slog.Logger
-
-func InitLogger(levelStr string) {
-	level := getLogLevelFromString(levelStr)
-	logConfig.Level = level
-	slogger = slog.New(slog.NewJSONHandler(os.Stdout, logConfig))
-}
-
-func Debug(msg string, args ...any) {
-	slogger.Debug(msg, args...)
-}
-
-func Info(msg string, args ...any) {
-	slogger.Info(msg, args...)
-}
-
-func Warn(msg string, args ...any) {
-	slogger.Warn(msg, args...)
-}
-
-func Error(msg string, args ...any) {
-	slogger.Error(msg, args...)
-}
-
-func getLogLevelFromString(levelStr string) slog.Level {
-	levelStr = strings.ToLower(strings.TrimSpace(levelStr))
-
-	switch levelStr {
-	case "debug":
-		return slog.LevelDebug
-	case "info":
-		return slog.LevelInfo
-	case "warn", "warning":
-		return slog.LevelWarn
-	case "error":
-		return slog.LevelError
-	default:
-		return slog.LevelInfo // Default to info
-	}
-}
+var L Logger = &slogLogger{} // Global logger

@@ -20,4 +20,4 @@ EXPOSE 8181
 
 VOLUME ["/app/data"]
 
-CMD ["./main"]
+ENTRYPOINT ["./main"]
