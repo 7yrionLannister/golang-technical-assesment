@@ -20,7 +20,7 @@ const (
 // Read data from test.csv and import it into the database
 func ImportTestData() error {
 	// Read data from file
-	logger.Debug("Importing data from file")
+	logger.L.Debug("Importing data from file")
 	file, err := os.Open(dataFile)
 	if err != nil {
 		return util.HandleError(err, "Failed to open data file")
@@ -51,6 +51,6 @@ func ImportTestData() error {
 	if err != nil {
 		return util.HandleError(err, "Failed to create in batches")
 	}
-	logger.Debug("Imported data from file")
+	logger.L.Debug("Imported data from file")
 	return nil
 }
