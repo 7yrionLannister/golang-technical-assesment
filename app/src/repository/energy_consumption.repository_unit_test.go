@@ -23,9 +23,9 @@ var (
 
 var mockDB *test.MockDatabase
 
-// Initialize the mock database and the logger.
+// Initialize the mock database and the logger.L.
 func TestMain(m *testing.M) {
-	logger.InitLogger(config.Env.LogLevel)
+	logger.L.InitLogger(config.Env.LogLevel)
 	db.DB = new(test.MockDatabase)
 	db.DB.InitDatabaseConnection()
 	mockDB = db.DB.(*test.MockDatabase)

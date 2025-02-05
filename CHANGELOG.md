@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [1.3.3] - 2025-02-04
+
+### Added
+
+- v1.3.3 use zap logging framework
+
 ## [1.3.2] - 2025-01-26
 
 ### Added
