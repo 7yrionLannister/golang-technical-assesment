@@ -2,7 +2,6 @@ package config
 
 import (
 	"database/sql"
-	"log/slog"
 	"os"
 
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
@@ -18,7 +17,7 @@ func MigrateUp() error {
 	logger.L.Debug("Applying migrations...")
 	sqlDB, err := sql.Open("pgx", Env.DataBaseUrl)
 	if err != nil {
-		logger.L.Error("Failed to open database", slog.Any("error", err))
+		logger.L.Error("Failed to open database", "error", err)
 		os.Exit(1)
 	}
 	defer sqlDB.Close()

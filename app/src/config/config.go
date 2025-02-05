@@ -2,7 +2,6 @@ package config
 
 import (
 	"log"
-	"log/slog"
 	"os"
 
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
@@ -21,7 +20,7 @@ func Setup() {
 	// Migrate the database
 	err = MigrateUp()
 	if err != nil {
-		logger.L.Error("Error migrating database", slog.Any("error", err))
+		logger.L.Error("Error migrating database", "error", err)
 		os.Exit(1)
 	}
 	logger.L.Debug("Initialized application")

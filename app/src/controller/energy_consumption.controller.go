@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log/slog"
 	"time"
 
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
@@ -37,25 +36,25 @@ func GetConsumption(c *gin.Context) {
 	var params consumptionQueryParams
 	err := c.BindQuery(&params)
 	if err != nil {
-		logger.L.Error("Error binding query params", slog.Any("error", err))
+		logger.L.Error("Error binding query params", "error", err)
 		c.JSON(400, gin.H{"error": "Invalid query params", "cause": err})
 		return
 	}
 	metersIds, err := util.String2UintSlice(params.MeterIdsString)
 	if err != nil {
-		logger.L.Error("Error converting meter ids to slice", slog.Any("error", err))
+		logger.L.Error("Error converting meter ids to slice", "error", err)
 		c.JSON(400, gin.H{"error": "Failed to convert meter ids to slice", "cause": err})
 		return
 	}
 	params.MeterIds = metersIds
-	logger.L.Debug("Query params", slog.Any("params", params))
+	logger.L.Debug("Query params", "params", params)
 	// Query data from the service
 	periodDto, err := service.GetEnergyConsumptions(params.MeterIds, params.StartDate, params.EndDate, params.KindPeriod)
 	if err != nil {
-		logger.L.Error("Error querying consumption data", slog.Any("error", err))
+		logger.L.Error("Error querying consumption data", "error", err)
 		c.JSON(500, gin.H{"error": "Internal server error"})
 		return
 	}
-	logger.L.Info("Consumption data retrieved successfully", slog.Any("response", periodDto))
+	logger.L.Info("Consumption data retrieved successfully", "response", periodDto)
 	c.JSON(200, periodDto)
 }

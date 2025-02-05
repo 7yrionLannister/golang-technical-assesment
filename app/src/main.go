@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log/slog"
 	"os"
 
 	"github.com/7yrionLannister/golang-technical-assesment/config"
@@ -25,7 +24,6 @@ import (
 // @host      localhost:8181
 // @BasePath  /
 func main() {
-	// TODO use zap for logging
 	// TODO in the repository, make a query that brings the report from DB instead of computing it in the service
 	app := setup()
 	app.Run()
@@ -45,11 +43,11 @@ func dbInit() {
 	db.DB = new(db.GormDatabase)
 	err := db.DB.InitDatabaseConnection()
 	if err != nil {
-		logger.L.Error("Error initializing database connection", slog.Any("error", err))
+		logger.L.Error("Error initializing database connection", "error", err)
 		os.Exit(1)
 	}
 	err = db.ImportTestData()
 	if err != nil {
-		logger.L.Warn("Error importing test data", slog.Any("error", err))
+		logger.L.Warn("Error importing test data", "error", err)
 	}
 }
