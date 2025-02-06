@@ -60,7 +60,7 @@ To build and run the service using Docker:
     ```
 2. Run the Docker container:
     ```sh
-    docker run -p 8181:8181 --network app_consumption energy-consumption-reporter
+    docker run -p 8181:8181 --env-file src/.env.docker --network app_consumption energy-consumption-reporter
     ```
 
 ## Contributing

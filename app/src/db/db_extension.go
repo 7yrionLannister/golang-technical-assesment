@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	dataFile  = "../data/test.csv"
+	dataFile  = "./data/test.csv"
 	batchSize = 1000
 )
 
