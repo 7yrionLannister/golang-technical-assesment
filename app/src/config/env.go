@@ -1,7 +1,9 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -25,7 +27,7 @@ var Env Environment = Environment{}
 // Loads the environment variables into [Env].
 func LoadEnv() error {
 	err := godotenv.Load(".env")
-	if err != nil {
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return fmt.Errorf("error loading .env file: %w", err)
 	}
 	err = env.Parse(&Env)

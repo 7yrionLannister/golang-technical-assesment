@@ -11,14 +11,19 @@ import (
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
 	"github.com/7yrionLannister/golang-technical-assesment/controller/dto"
 	"github.com/7yrionLannister/golang-technical-assesment/db"
-	"github.com/7yrionLannister/golang-technical-assesment/db/model"
+	"github.com/7yrionLannister/golang-technical-assesment/db/view"
 	"github.com/7yrionLannister/golang-technical-assesment/test"
-	"github.com/google/uuid"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 var mockDB *test.MockDatabase
+
+var expectedResult = []dto.EnergyConsumptionDTO{
+	{MeterId: 0, Address: mock.Anything, Active: []float64{1, 0}},
+	{MeterId: 1, Address: mock.Anything, Active: []float64{0, 11}},
+}
 
 // Initialize the mock database and the logger.L.
 func TestMain(m *testing.M) {
@@ -27,8 +32,44 @@ func TestMain(m *testing.M) {
 	db.DB.InitDatabaseConnection()
 	mockDB = db.DB.(*test.MockDatabase)
 
+	mockDB.On("Model", mock.Anything).Return(mockDB)
+	mockDB.On("Select", mock.Anything, mock.Anything).Return(mockDB)
+	mockDB.On("Where", mock.Anything, mock.Anything).Return(mockDB)
+	mockDB.On("Group", mock.Anything).Return(mockDB)
+
 	code := m.Run()
 	os.Exit(code)
+}
+
+func mockForPeriods(metersIds []uint) {
+	// Expect
+	// Database state
+	data := make([]view.EnergyConsumptionDTO, 2)
+	for i := range 2 {
+		data[i] = view.EnergyConsumptionDTO{
+			MeterId:          metersIds[i],
+			Address:          faker.GetRealAddress().Address,
+			TotalConsumption: float64(i*10 + 1),
+		}
+	}
+
+	// When
+	mockDB.On("Scan", mock.Anything).
+		// Then
+		Return([]view.EnergyConsumptionDTO{data[0], {}}, nil).
+		Once()
+	mockDB.On("Error").
+		// Then
+		Return(nil).
+		Once()
+	mockDB.On("Scan", mock.Anything).
+		// Then
+		Return([]view.EnergyConsumptionDTO{{}, data[1]}, nil).
+		Once()
+	mockDB.On("Error").
+		// Then
+		Return(nil).
+		Once()
 }
 
 func TestGetEnergyConsumptionsMonthly_Success(t *testing.T) {
@@ -38,45 +79,11 @@ func TestGetEnergyConsumptionsMonthly_Success(t *testing.T) {
 	startDate, _ := time.Parse("2006-01-02", "2025-01-01")
 	endDate, _ := time.Parse("2006-01-02", "2025-02-28")
 
-	// Expect
-	// Database state
-	data := make([]model.EnergyConsumption, 4)
-	for i := range 4 {
-		createdAt := startDate
-		if i%2 == 0 {
-			// even index records the next month
-			createdAt = createdAt.AddDate(0, 1, 0)
-		}
-		randomId, _ := uuid.NewRandom()
-		data[i] = model.EnergyConsumption{
-			Id:          randomId,
-			DeviceId:    uint(i % 2), // 0 or 1
-			Consumption: float64(i*10 + 1),
-			CreatedAt:   createdAt,
-		}
-	}
-
-	// When
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[1], startDate, startDate.AddDate(0, 1, 0)}).
-		// Then
-		Return([]model.EnergyConsumption{data[1], data[3]}, nil)
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[0], startDate.AddDate(0, 1, 0), endDate}).
-		// Then
-		Return([]model.EnergyConsumption{data[0], data[2]}, nil)
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[1], startDate.AddDate(0, 1, 0), endDate}).
-		// Then
-		Return([]model.EnergyConsumption{}, nil)
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[0], startDate, startDate.AddDate(0, 1, 0)}).
-		// Then
-		Return([]model.EnergyConsumption{}, nil)
+	mockForPeriods(metersIds)
 
 	// Test
 	result, err := GetEnergyConsumptions(metersIds, startDate, endDate, "monthly")
 
-	expectedResult := []dto.EnergyConsumptionDTO{
-		{MeterId: 0, Address: mock.Anything, Active: []float64{0, 22}},
-		{MeterId: 1, Address: mock.Anything, Active: []float64{42, 0}},
-	}
 	// Assert
 	assert.NoError(t, err)
 	assert.Len(t, result.DataGraph, 2)
@@ -104,43 +111,20 @@ func TestGetEnergyConsumptionsWeekly_Success(t *testing.T) {
 
 	// Expect
 	// Database state
-	data := make([]model.EnergyConsumption, 4)
-	for i := range 4 {
-		createdAt := startDate
-		if i%2 == 0 {
-			// even index records the next week
-			createdAt = createdAt.AddDate(0, 0, 7)
-		}
-		randomId, _ := uuid.NewRandom()
-		data[i] = model.EnergyConsumption{
-			Id:          randomId,
-			DeviceId:    uint(i % 2), // 0 or 1
-			Consumption: float64(i*10 + 1),
-			CreatedAt:   createdAt,
+	data := make([]view.EnergyConsumptionDTO, 2)
+	for i := range 2 {
+		data[i] = view.EnergyConsumptionDTO{
+			MeterId:          metersIds[i],
+			Address:          faker.GetRealAddress().Address,
+			TotalConsumption: float64(i*10 + 1),
 		}
 	}
 
-	// When
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[1], startDate, startDate.AddDate(0, 0, 7)}).
-		// Then
-		Return([]model.EnergyConsumption{data[1], data[3]}, nil)
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[0], startDate.AddDate(0, 0, 7), endDate}).
-		// Then
-		Return([]model.EnergyConsumption{data[0], data[2]}, nil)
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[1], startDate.AddDate(0, 0, 7), endDate}).
-		// Then
-		Return([]model.EnergyConsumption{}, nil)
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[0], startDate, startDate.AddDate(0, 0, 7)}).
-		// Then
-		Return([]model.EnergyConsumption{}, nil)
+	mockForPeriods(metersIds)
 
 	// Test
 	result, err := GetEnergyConsumptions(metersIds, startDate, endDate, "weekly")
 
-	expectedResult := []dto.EnergyConsumptionDTO{
-		{MeterId: 0, Address: mock.Anything, Active: []float64{0, 22}},
-		{MeterId: 1, Address: mock.Anything, Active: []float64{42, 0}},
-	}
 	// Assert
 	assert.NoError(t, err)
 	assert.Len(t, result.DataGraph, 2)
@@ -168,43 +152,20 @@ func TestGetEnergyConsumptionsDaily_Success(t *testing.T) {
 
 	// Expect
 	// Database state
-	data := make([]model.EnergyConsumption, 4)
+	data := make([]view.EnergyConsumptionDTO, 4)
 	for i := range 4 {
-		createdAt := startDate
-		if i%2 == 0 {
-			// even index records the next week
-			createdAt = createdAt.AddDate(0, 0, 1)
-		}
-		randomId, _ := uuid.NewRandom()
-		data[i] = model.EnergyConsumption{
-			Id:          randomId,
-			DeviceId:    uint(i % 2), // 0 or 1
-			Consumption: float64(i*10 + 1),
-			CreatedAt:   createdAt,
+		data[i] = view.EnergyConsumptionDTO{
+			MeterId:          metersIds[i%2],
+			Address:          faker.GetRealAddress().Address,
+			TotalConsumption: float64(i*10 + 1),
 		}
 	}
 
-	// When
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[1], startDate, startDate.AddDate(0, 0, 1)}).
-		// Then
-		Return([]model.EnergyConsumption{data[1], data[3]}, nil)
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[0], startDate.AddDate(0, 0, 1), endDate}).
-		// Then
-		Return([]model.EnergyConsumption{data[0], data[2]}, nil)
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[1], startDate.AddDate(0, 0, 1), endDate}).
-		// Then
-		Return([]model.EnergyConsumption{}, nil)
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{metersIds[0], startDate, startDate.AddDate(0, 0, 1)}).
-		// Then
-		Return([]model.EnergyConsumption{}, nil)
+	mockForPeriods(metersIds)
 
 	// Test
 	result, err := GetEnergyConsumptions(metersIds, startDate, endDate, "daily")
 
-	expectedResult := []dto.EnergyConsumptionDTO{
-		{MeterId: 0, Address: mock.Anything, Active: []float64{0, 22}},
-		{MeterId: 1, Address: mock.Anything, Active: []float64{42, 0}},
-	}
 	// Assert
 	assert.NoError(t, err)
 	assert.Len(t, result.DataGraph, 2)
@@ -234,7 +195,12 @@ func TestGetEnergyConsumptionsMonthly_Error(t *testing.T) {
 	expectedErr := errors.New("database error")
 
 	// When
-	mockDB.On("Find", mock.Anything, mock.Anything, mock.Anything).
+	mockDB.On("Error").
+		// Then
+		Return(expectedErr).
+		Once()
+	// When
+	mockDB.On("Scan", mock.Anything, mock.Anything, mock.Anything).
 		// Then
 		Return(nil, expectedErr)
 
@@ -259,7 +225,12 @@ func TestGetEnergyConsumptionsWeekly_Error(t *testing.T) {
 	expectedErr := errors.New("database error")
 
 	// When
-	mockDB.On("Find", mock.Anything, mock.Anything, mock.Anything).
+	mockDB.On("Error").
+		// Then
+		Return(expectedErr).
+		Once()
+	// When
+	mockDB.On("Scan", mock.Anything, mock.Anything, mock.Anything).
 		// Then
 		Return(nil, expectedErr)
 
@@ -284,7 +255,12 @@ func TestGetEnergyConsumptionsDaily_Error(t *testing.T) {
 	expectedErr := errors.New("database error")
 
 	// When
-	mockDB.On("Find", mock.Anything, mock.Anything, mock.Anything).
+	mockDB.On("Error").
+		// Then
+		Return(expectedErr).
+		Once()
+	// When
+	mockDB.On("Scan", mock.Anything, mock.Anything, mock.Anything).
 		// Then
 		Return(nil, expectedErr)
 
