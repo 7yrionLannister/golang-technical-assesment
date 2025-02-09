@@ -9,16 +9,10 @@ import (
 	"github.com/7yrionLannister/golang-technical-assesment/config"
 	"github.com/7yrionLannister/golang-technical-assesment/config/logger"
 	"github.com/7yrionLannister/golang-technical-assesment/db"
-	"github.com/7yrionLannister/golang-technical-assesment/db/model"
+	"github.com/7yrionLannister/golang-technical-assesment/db/view"
 	"github.com/7yrionLannister/golang-technical-assesment/test"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-)
-
-var (
-	uuid1 = uuid.MustParse("62b7253d-4f6c-49d8-a0ec-c0452a832d10")
-	uuid2 = uuid.MustParse("204757bc-fb23-49c4-9adc-41957ba19cb6")
 )
 
 var mockDB *test.MockDatabase
@@ -29,6 +23,11 @@ func TestMain(m *testing.M) {
 	db.DB = new(test.MockDatabase)
 	db.DB.InitDatabaseConnection()
 	mockDB = db.DB.(*test.MockDatabase)
+
+	mockDB.On("Model", mock.Anything).Return(mockDB)
+	mockDB.On("Select", mock.Anything, mock.Anything).Return(mockDB)
+	mockDB.On("Where", mock.Anything, mock.Anything).Return(mockDB)
+	mockDB.On("Group", mock.Anything).Return(mockDB)
 
 	code := m.Run()
 	os.Exit(code)
@@ -41,18 +40,22 @@ func TestGetEnergyConsumptionsByMeterIdBetweenDates_Success(t *testing.T) {
 	endDate := time.Now()
 
 	// Expect
-	expectedData := []model.EnergyConsumption{
-		{Id: uuid1, DeviceId: 123, Consumption: 1.0, CreatedAt: endDate},
-		{Id: uuid2, DeviceId: 123, Consumption: 2.0, CreatedAt: endDate},
+	expectedData := []view.EnergyConsumptionDTO{
+		{MeterId: meterId, Address: "address", TotalConsumption: 1000.35},
 	}
 
 	// When
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{meterId, startDate, endDate}).
+	mockDB.On("Scan", mock.Anything).
 		// Then
 		Return(expectedData, nil)
+		// When
+	mockDB.On("Error").
+		// Then
+		Return(nil).
+		Once()
 
 	// Test
-	result, err := GetEnergyConsumptionsByMeterIdBetweenDates(meterId, startDate, endDate)
+	result, err := GetEnergyConsumptionsByMeterIdBetweenDates([]uint{meterId}, startDate, endDate)
 
 	// Assert
 	assert.NoError(t, err)
@@ -70,12 +73,16 @@ func TestGetEnergyConsumptionsByMeterIdBetweenDates_Error(t *testing.T) {
 	expectedErr := errors.New("database error")
 
 	// When
-	mockDB.On("Find", mock.Anything, "device_id = (?) AND created_at BETWEEN ? AND ?", []any{meterId, startDate, endDate}).
+	mockDB.On("Error").
+		// Then
+		Return(expectedErr).
+		Once()
+	mockDB.On("Scan", mock.Anything).
 		// Then
 		Return(nil, expectedErr)
 
 	// Test
-	result, err := GetEnergyConsumptionsByMeterIdBetweenDates(meterId, startDate, endDate)
+	result, err := GetEnergyConsumptionsByMeterIdBetweenDates([]uint{meterId}, startDate, endDate)
 
 	// Assert
 	assert.Error(t, err)

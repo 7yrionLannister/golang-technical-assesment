@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- v1.3.4 add more functions to database abstraction
+- v1.3.4 optimize computation of total energy consumption by delegating it to the database
+
 ### Changed
 
 ### Removed
