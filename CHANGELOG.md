@@ -9,28 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- v1.3.4 add more functions to database abstraction
-- v1.3.4 optimize computation of total energy consumption by delegating it to the database
-
 ### Changed
 
 ### Removed
 
-## [1.3.3] - 2025-02-04
+## [1.3.4] - 2025-02-09
 
 ### Added
 
-- v1.3.3 use zap logging framework
+- v1.3.4 add more functions to database abstraction
+
+## Changed
+
+- v1.3.4 optimize computation of total energy consumption by delegating it to the database
+
+## [1.3.3] - 2025-02-04
+
+### Changed
+
+- v1.3.3 use zap logging framework instead of log/slog for efficiency
 
 ## [1.3.2] - 2025-01-26
 
-### Added
+### Changed
 
 - v1.3.2 fix Docker files
 
 ## [1.3.1] - 2025-01-26
 
-### Added
+### Changed
 
 - v1.3.1 fix multiple meters ids in query params
 
