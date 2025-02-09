@@ -65,11 +65,25 @@ func (zlogger *zapLogger) anySliceToZapFieldSlice(fields []any) []zap.Field {
 	var zapFields []zap.Field
 	n := len(fields)
 	for i := 0; i < n; i += 2 {
-		zapFields = append(zapFields, zap.Any(fields[i].(string), fields[i+1]))
+		key, ok := fields[i].(string)
+		if !ok {
+			continue // Skip if key is not a string
+		}
+
+		switch v := fields[i+1].(type) {
+		case string:
+			zapFields = append(zapFields, zap.String(key, v))
+		case int:
+			zapFields = append(zapFields, zap.Int(key, v))
+		case int64:
+			zapFields = append(zapFields, zap.Int64(key, v))
+		case float64:
+			zapFields = append(zapFields, zap.Float64(key, v))
+		case bool:
+			zapFields = append(zapFields, zap.Bool(key, v))
+		default:
+			zapFields = append(zapFields, zap.Any(key, v))
+		}
 	}
 	return zapFields
-}
-
-func (zlogger *zapLogger) Any(key string, value any) zap.Field {
-	return zap.Any(key, value)
 }

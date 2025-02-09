@@ -11,13 +11,10 @@ COPY src/go.mod src/go.sum ./
 RUN go mod download
 
 COPY src/ .
-COPY src/.env.docker ./.env
 
 # Use `RUN go build -o main -tags timetzdata .` to include the timezone data. This will increase the size of the image.
 RUN go build -o main .
 
 EXPOSE 8181
-
-VOLUME ["/app/data"]
 
 ENTRYPOINT ["./main"]
