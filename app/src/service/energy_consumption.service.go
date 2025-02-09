@@ -64,17 +64,13 @@ func stepDateAndGetPeriodString(kindPeriod string, initialDate time.Time) (newDa
 	}
 }
 
-// Computes the energy consumption for each meter in the metersIds slice for the period between periodStartDate and periodEndDate
+// Queries the energy consumption for each meter in the metersIds slice for the period between periodStartDate and periodEndDate
 func populateDataGraphForPeriod(periodDto *dto.PeriodicConsumptionDTO, metersIds []uint, energyConsumptionDTOForMeter map[uint]*dto.EnergyConsumptionDTO, periodStartDate time.Time, periodEndDate time.Time) error {
-	for _, meterId := range metersIds {
-		energyConsumptions, err := repository.GetEnergyConsumptionsByMeterIdBetweenDates(meterId, periodStartDate, periodEndDate)
-		if err != nil {
-			return util.HandleError(err, "Failed to fetch energy consumptions")
-		}
-		consumption := 0.0
-		for _, energyConsumption := range energyConsumptions {
-			consumption += energyConsumption.Consumption
-		}
+	energyConsumptions, err := repository.GetEnergyConsumptionsByMeterIdBetweenDates(metersIds, periodStartDate, periodEndDate)
+	if err != nil {
+		return util.HandleError(err, "Failed to fetch energy consumptions")
+	}
+	for index, meterId := range metersIds {
 		energyConsumptionDTO, present := energyConsumptionDTOForMeter[meterId]
 		if !present {
 			energyConsumptionDTO = &dto.EnergyConsumptionDTO{
@@ -85,7 +81,7 @@ func populateDataGraphForPeriod(periodDto *dto.PeriodicConsumptionDTO, metersIds
 			energyConsumptionDTOForMeter[meterId] = energyConsumptionDTO
 			periodDto.DataGraph = append(periodDto.DataGraph, energyConsumptionDTO)
 		}
-		energyConsumptionDTO.Active = append(energyConsumptionDTO.Active, consumption)
+		energyConsumptionDTO.Active = append(energyConsumptionDTO.Active, energyConsumptions[index].TotalConsumption)
 	}
 	return nil
 }

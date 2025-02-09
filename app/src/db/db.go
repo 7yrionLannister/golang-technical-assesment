@@ -29,18 +29,18 @@ type Database interface {
 
 // Specific implementation of the Database interface using gorm
 type GormDatabase struct {
-	DB *gorm.DB
+	GormDb *gorm.DB
 }
 
 func (g *GormDatabase) Find(out any, query string, args ...any) error {
-	return g.DB.Where(query, args...).Find(out).Error
+	return g.GormDb.Where(query, args...).Find(out).Error
 }
 
 func (g *GormDatabase) CreateInBatches(value any, batchSize int) error {
-	return g.DB.CreateInBatches(value, batchSize).Error
+	return g.GormDb.CreateInBatches(value, batchSize).Error
 }
 
-// Global gorm database connection.
+// Global database connection.
 // Call [InitDatabaseConnection] once at the beggining of the application to initialize the connection.
 var DB Database
 
@@ -54,7 +54,7 @@ func (g *GormDatabase) InitDatabaseConnection() error {
 	if err != nil {
 		return util.HandleError(err, "Failed to connect to database")
 	}
-	g.DB = db
+	g.GormDb = db
 	logger.L.Debug("Connected to database")
 	return nil
 }
