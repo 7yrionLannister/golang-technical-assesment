@@ -24,7 +24,6 @@ import (
 // @host      localhost:8181
 // @BasePath  /
 func main() {
-	// TODO in the repository, make a query that brings the report from DB instead of computing it in the service
 	app := setup()
 	app.Run()
 }

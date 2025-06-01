@@ -1,5 +1,5 @@
 # Use the official Golang image
-FROM golang:1.23.2
+FROM golang:1.24.3
 
 # Uncomment the following line if you need access to the timezone data
 # RUN apt-get update && apt-get install -y tzdata

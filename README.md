@@ -9,7 +9,7 @@ This is a Golang-based microservice designed to report the energy consumption of
 - v1.3 Report daily energy consumption
 
 ## Prerequisites
-- Go 1.23.x
+- Go 1.24.x
 - Docker (optional, if using containerization)
 
 ## Installation

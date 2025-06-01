@@ -17,7 +17,7 @@ const (
 
 // Returns the energy consumption for each meter in the metersIds slice for the period between startDate and endDate.
 func GetEnergyConsumptions(metersIds []uint, startDate time.Time, endDate time.Time, kindPeriod string) (*dto.PeriodicConsumptionDTO, error) {
-	var periodDto = &dto.PeriodicConsumptionDTO{
+	periodDto := &dto.PeriodicConsumptionDTO{
 		Period:    make([]string, 0),
 		DataGraph: make([]*dto.EnergyConsumptionDTO, 0),
 	}

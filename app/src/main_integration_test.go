@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/7yrionLannister/golang-technical-assesment/controller/dto"
-	"github.com/7yrionLannister/golang-technical-assesment/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
@@ -88,9 +87,6 @@ func TestIntegrationGetConsumption_Success(t *testing.T) {
 		},
 	}
 
-	st, _ := time.Parse("2006-01-02", "2022-01-01")
-	en, _ := time.Parse("2006-01-02", "2025-01-28")
-	repository.GetEnergyConsumptionsByMeterIdBetweenDates(metersIds, st, en)
 	w := httptest.NewRecorder()
 	uri := fmt.Sprintf(URIFormat, metersIds[0], metersIds[1], startDate, endDate, kindPeriod)
 	req, _ := http.NewRequest(http.MethodGet, uri, nil)
